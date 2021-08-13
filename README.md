@@ -3,7 +3,7 @@
 NOTE: This is poorly coded. Im a beginner and should only be used as an example for your own projects.
 There is plenty of work to be done to make it work better, faster whatever.
 
-haarcasacde files used
+Haarcasacde files used
 
 1. [CAR](https://gist.github.com/199995/37e1e0af2bf8965e8058a9dfa3285bc6)
 2. [LICENSE PLATE](https://github.com/opencv/opencv/blob/4.5.3/data/haarcascades/haarcascade_russian_plate_number.xml)
