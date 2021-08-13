@@ -1,0 +1,4 @@
+classify_enable_learning 0
+load_system_dawg 0
+load_freq_dawg 0
+tessedit_char_whitelist 1234567890ABCDEFGHIJKLMOPQRSTUVWXYZÆØÅ 
