@@ -2,33 +2,40 @@ import mariadb
 import sys
 from PIL import Image
 import os
+from dataclasses import dataclass
+
+@dataclass
+class arg:
+    show: bool
+    print_id: bool
+    query: bool
+    def get_id() -> str:
+        for idx, arg in enumerate(sys.argv):
+            if arg == "--id":
+                return sys.argv[idx + 1]
+
+    def show_or_not():
+        for idx, arg in enumerate(sys.argv):
+            if arg == "-s":
+                return True
+
+    def list_id():
+        for idx, arg in enumerate(sys.argv):
+            if arg == "--list-id":
+                return True
+
+    def query_images():
+        for idx, arg in enumerate(sys.argv):
+            if arg == "--query-images":
+                return True
+
+# END OF DATACLASS #
 
 cwd = os.getcwd()
 abspath = os.path.abspath(cwd)
 output_folder = "%s/output/" % abspath
 
-def get_id():
-    for idx, arg in enumerate(sys.argv):
-        if arg == "-id":
-            id = sys.argv[idx + 1]
-            return str(id)
 
-def show_or_not():
-    for idx, arg in enumerate(sys.argv):
-        if arg == "-s":
-            return True
-
-def list_id():
-    for idx, arg in enumerate(sys.argv):
-        if arg == "--list-id":
-            return True
-
-def query_images():
-    for idx, arg in enumerate(sys.argv):
-        if arg == "--query-images":
-            return True
-
-# def query_or_retrieve(): 
 
 
 def query_list(list_id, show_images, id, show): 
@@ -91,26 +98,27 @@ if __name__ == '__main__':
             print('\nCommands:\nHelp: -h\Query: -q\nShow Image At End -s\nId: --id\nList ID: --list-id\nQuery Images: --query-images\nExample: retrieve_image.py -q -s --query-images --id 20 --show-images\n')
             exit(1) 
         elif sys.argv[1] == "-q":
-            list_id = False
-            show_images = False
-            if list_id():
-                list_id = True
-            query_images = query_images()
-            id = get_id()
-            show_images = show_or_not()
+            arg.print_id = False
+            arg.show = False
+            if arg.list_id():
+                arg.print_id = True
+            arg.show = arg.show_or_not()
             # Get id
-            if list_id == True:
+            if arg.print_id == True:
                 query_list(True, False, 0, False)
-                exit(1)
-            # Not allowed to query if you forget an id
-            if id == None:
-                print("Forgot ID '--id'")
                 exit(1)
             # Create output dir
             create_output_dir()
-            # Make query
-            if query_images == True:
-                query_list(False, True, id, show_images)
+            # Not allowed to query if you forget an id
+            if arg.get_id() != None:
+                # Make query
+                if arg.query_images() == True:
+                    query_list(False, True, arg.get_id(), arg.show)
+            else:
+                print("Forgot ID '--id'")
+                exit(1)
+            
+            
         else: 
             exit(1)
     except IndexError as error:

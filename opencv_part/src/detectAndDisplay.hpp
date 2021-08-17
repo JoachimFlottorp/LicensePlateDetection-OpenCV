@@ -14,8 +14,13 @@
 #include <time.h>
 #include <cmath>
 #include <memory>
+#include <stdexcept>
+#include <fstream>
+#include <filesystem>
 
+#include "main.hpp"
 #include "sql.hpp"
+
 #define DEBUG_PRINT fprintf(stderr, "CHECKPOINT REACHED @  %s:%i\n", __FILE__, __LINE__);
 #define BRIGHT_BLUE_SCALAR cv::Scalar(186, 82, 15)
 #define BRIGHT_GREEN_SCALAR cv::Scalar(54, 182, 43)
@@ -27,8 +32,7 @@ struct word {
 
 class detectAndDisplay {
 public:
-	static void display_screen_find(cv::Mat& frame, cv::CascadeClassifier car_classifier, cv::CascadeClassifier license_classifier, double fps, tesseract::TessBaseAPI& tess_api, 
-		MYSQL* conn);
+	static bool main_loop(struct opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api);
 };
 
 #endif // !DETECTANDDISPLAY_HPP

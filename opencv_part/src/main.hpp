@@ -8,7 +8,6 @@
 #include <opencv2/objdetect.hpp>
 #include <leptonica/allheaders.h>
 #include <tesseract/baseapi.h>
-#include <mysql/mysql.h>
 
 #include "detectAndDisplay.hpp"
 #include "sql.hpp"
@@ -19,15 +18,18 @@
 #include <string.h>
 #include <utility>
 
-MYSQL* conn;
+struct opencv_configuration {
+	cv::CascadeClassifier licenseplate_classifier;
+	cv::CascadeClassifier car_classifier;
+	std::string img_arg;
+	std::string vid_arg;
+	std::string car_class_arg = "cars_cv.xml";
+	std::string license_class_arg = "haarcascade_russian_plate_number.xml";
+	int camera_arg;
+};
 
-cv::CascadeClassifier g_licenseplate_lp_classifier;
-cv::CascadeClassifier g_car_lp_classifier;
-std::string g_img_arg;
-std::string g_vid_arg;
-std::string g_car_class_arg = "cars_cv.xml";
-std::string g_license_class_arg = "haarcascade_russian_plate_number.xml";
 
-int g_camera_arg;
+
+
 
 #endif // !MAIN_HPP

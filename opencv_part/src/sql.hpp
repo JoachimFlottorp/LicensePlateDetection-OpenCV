@@ -26,7 +26,7 @@ class mariasql
 public:
 	static void mysql_execute_query(MYSQL* conn, std::string sql_query, unsigned long len);
 
-	static bool WRITE_LICENSE_PLATE(MYSQL* conn, cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text);
+	static bool WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text);
 };
 
 

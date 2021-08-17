@@ -10,8 +10,20 @@ void mariasql::mysql_execute_query(MYSQL* conn, std::string sql_query, unsigned 
 	}
 }
 
-bool mariasql::WRITE_LICENSE_PLATE(MYSQL* conn, cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text) {
+bool mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text) {
 	printf("\nWriting to SQL.\n");
+	MYSQL* conn;
+	// Create sql connection
+	if (!(conn = mysql_init(0))) {
+		fprintf(stderr, "Unable to intitalize a connection!\n");
+		exit(1);
+	}
+	if (!mysql_real_connect(conn, "172.17.0.1", "root", "root", "license", 3306, nullptr, 0)) {
+		fprintf(stderr, "Error connecting to SQL server!: %s\n", mysql_error(conn));
+		mysql_close(conn);
+		exit(1);
+	}
+	printf("Connected to MySQL Server!\n");
 	query_s s;
 	if (s.write_confirmation) {
 		// Convert query
@@ -21,9 +33,10 @@ bool mariasql::WRITE_LICENSE_PLATE(MYSQL* conn, cv::Mat& scene, cv::Mat& car, cv
 		printf("SQL Query Length: %ul\n", s.query_len);
 		// Make the SQL query
 		mariasql::mysql_execute_query(conn, s.query, s.query_len);
+		mysql_close(conn);
 		return true;
 	}
-	else { fprintf(stderr, "\nError Creating SQL query\n"); return false; };
+	else { fprintf(stderr, "\nError Creating SQL query\n"); mysql_close(conn); return false; };
 }
 
 struct query_s string_format(const cv::Mat& scene, const cv::Mat& car, const cv::Mat& plate, std::string plate_text, MYSQL* conn) {

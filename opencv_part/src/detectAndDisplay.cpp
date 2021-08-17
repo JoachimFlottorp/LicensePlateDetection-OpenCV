@@ -22,7 +22,7 @@ bool eq(float& a) {
 	return false;
 }
 
-struct word find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor, MYSQL* conn) {
+struct word find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor) {
 	struct word w;
 	tesseract::ResultIterator* ri = tess_api.GetIterator();
 	tesseract::PageIteratorLevel pi_level = tesseract::RIL_WORD;
@@ -57,7 +57,8 @@ struct word find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& 
 	// We make sure all the words we find are over 85% confidence. And that there are atleast two words.
 	try {
 		if (count.size() >= 2)
-			w.query_confirmation = mariasql::WRITE_LICENSE_PLATE(conn, frame, carsColor, licenseColor, ss.str());
+			printf("asd");
+			//w.query_confirmation = mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
 		else { w.query_confirmation = false; };
 	}
 	catch (const std::exception& e) {
@@ -121,8 +122,7 @@ void print_all_the_things(cv::Mat frame) {
 	cv::putText(frame, "Conf:", cv::Point(5, 330), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 }
 
-void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier car_classifier, cv::CascadeClassifier license_classifier, double fps, 
-											tesseract::TessBaseAPI& tess_api, MYSQL* conn) {
+void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, double fps, tesseract::TessBaseAPI& tess_api) {
 	cv::Mat frame_grey;
 	cv::Mat licenseROI;
 	cv::Mat licenseColor;
@@ -137,7 +137,7 @@ void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier
 	std::vector<cv::Rect> license;
 	std::vector<cv::Rect> cars;
 	// This si the main part. Looks for "cars"
-	car_classifier.detectMultiScale(frame_grey, cars, 1.1, 2, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size(100, 100));
+	opencv_config.car_classifier.detectMultiScale(frame_grey, cars, 1.1, 2, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size(100, 100));
 	print_all_the_things(frame);
 	printf("CARS FOUND: : %i : FPS : %f\n", cars.size(), fps);
 	for (size_t i = 0; i < cars.size(); i++) {
@@ -152,7 +152,7 @@ void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier
 		cv::resizeWindow("Car", (carsColor.cols / 2), (carsColor.rows / 2));
 		cv::imshow("Car", carsColor);
 
-		license_classifier.detectMultiScale(carsROI, license, 1.1, 2, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
+		opencv_config.licenseplate_classifier.detectMultiScale(carsROI, license, 1.1, 2, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
 		// If found we run a loop on every one of them
 		for (size_t j = 0; j < license.size(); j++) {
 			printf("LICENSE PLATES FOUND: : %i\n", license.size());
@@ -178,7 +178,7 @@ void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier
 			tess_api.GetUTF8Text();
 			// Check confidence of every word find. If there are two words. Example: "KB 51561" With 85% confidence per word
 			// We send the image over to our SQL server. 
-			word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor, conn);
+			word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor);
 			license_amount = word.plate.size();
 			// Draw amount of licenses found on the left corner
 			cv::putText(frame, std::to_string(license_amount), cv::Point(230, 120), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
@@ -189,7 +189,7 @@ void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier
 				deskew(licenseColor, compute_skew(licenseROI));
 				cv::resizeWindow("Rotated", (licenseColor.cols / 2), (licenseColor.rows / 2));
 				cv::imshow("Rotated", licenseColor);
-				word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor, conn);
+				word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor);
 				if ((!word.plate.length()) > 0) {
 					printf("No recognized text!\n");
 					cv::putText(frame, "?", cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
@@ -208,4 +208,81 @@ void detectAndDisplay::display_screen_find(cv::Mat& frame, cv::CascadeClassifier
 	}
 	cv::resizeWindow("Capture", (frame.cols / 4), (frame.rows / 4));
 	cv::imshow("Capture", frame);
+}
+
+bool vid_exists(const std::string& file) {
+	std::ifstream f(file.c_str());
+	return f.good();
+}
+
+std::string full_path(std::string& video) {
+	return std::filesystem::absolute(std::filesystem::path(video));
+}
+
+bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api) {
+	// Load haarcascade
+	if (!opencv_config.licenseplate_classifier.load(opencv_config.license_class_arg)) {
+		fprintf(stderr, "\nThere has been an error loading the haarcascade_russian_plate_number.xml CascadeClassifier file!\n");
+		return false;
+	}
+	if (!opencv_config.car_classifier.load(opencv_config.car_class_arg)) {
+		fprintf(stderr, "\nThere has been an error loading the cars_cv.xml CascadeClassifier file!\n");
+		return false;
+	}
+	// Picture
+	if (is_picture && !is_camera) {
+		cv::Mat image = cv::imread(opencv_config.img_arg, cv::IMREAD_COLOR);
+		if (image.empty()) {
+			fprintf(stderr, "There has been an error loading the image!\n");
+			return false;
+		}
+		bool is_first = true;
+		while (!image.empty()) {
+			// Only need to process once. Saves processing and frame does not get replaced so it gets filled with drawings
+			if (is_first) {
+				display_screen_find(image, opencv_config, 1, tess_api);
+			}
+			is_first = false;
+			// ESC
+			if (cv::waitKey(30) == 27) {
+				break;
+			}
+		}
+	}
+	else {
+		try {
+			cv::VideoCapture capture;
+			if (!is_camera) {
+				// If vid or protocol
+				if (vid_exists(opencv_config.vid_arg)) {
+				capture.open(full_path(opencv_config.vid_arg), cv::CAP_FFMPEG);
+				}
+				else {
+					capture.open(opencv_config.vid_arg, cv::CAP_FFMPEG);
+				}
+			}
+			if (is_camera)
+				capture.open(opencv_config.camera_arg);
+			if (!capture.isOpened()) {
+				fprintf(stderr, "Error opening video stream or file!\n");
+				capture.release();
+				return false;
+			}
+			// ESC
+			while (cv::waitKey(30) != 27) {
+				double fps = capture.get(cv::CAP_PROP_FPS);
+				cv::Mat frame;
+				capture >> frame;
+				if (frame.empty()) break;
+				display_screen_find(frame, opencv_config, fps, tess_api);
+			}
+			capture.release();
+		}
+		catch (const std::exception& e) {
+			std::cout << "\n\n" << e.what() << '\n' << std::endl;
+		}
+		
+	}
+	cv::destroyAllWindows();
+	return 0;
 }
