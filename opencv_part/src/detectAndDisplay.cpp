@@ -60,17 +60,14 @@ void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, 
 			bool first_time = false;
 			for (int i = 0; i != DAD.size(); i++) {
 				// Loop over vector. If license plate already is in there we dont query
-				if (DAD.get_vector()[i] != ss.str())
-					first_time = true;
-				else
-					first_time = false;
+				DAD.get_vector()[i] != ss.str() ? first_time = true : first_time = false;
 			}
 			if(first_time) mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
 		}
 		else { w.found(false); };
 	}
 	catch (const std::exception& e) {
-		std::cout << e.what() << std::endl;
+		std::cout << "\n\nException Thrown: " << e.what() << std::endl;
 	}
 	w.set_plate(ss.str());
 }
