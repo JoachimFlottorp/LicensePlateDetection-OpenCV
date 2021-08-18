@@ -25,9 +25,9 @@ void mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate,
 	}
 	printf("Connected to MySQL Server!\n");
 	query_s s;
+	// Convert query
+	s = string_format(scene, car, plate, plate_text, conn);
 	if (s.write_confirmation) {
-		// Convert query
-		s = string_format(scene, car, plate, plate_text, conn);
 		// Print stuff
 		printf("String made\n");
 		printf("SQL Query Length: %ul\n", s.query_len);
