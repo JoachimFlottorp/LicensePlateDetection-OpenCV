@@ -22,8 +22,7 @@ bool eq(float& a) {
 	return false;
 }
 
-struct word find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor) {
-	struct word w;
+void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor, word& w, detectAndDisplay& DAD) {
 	tesseract::ResultIterator* ri = tess_api.GetIterator();
 	tesseract::PageIteratorLevel pi_level = tesseract::RIL_WORD;
 	// Counting with a simple int counter does not work....
@@ -56,16 +55,24 @@ struct word find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& 
 	tess_api.Clear();
 	// We make sure all the words we find are over 85% confidence. And that there are atleast two words.
 	try {
-		if (count.size() >= 2)
-			printf("asd");
-			//w.query_confirmation = mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
-		else { w.query_confirmation = false; };
+		if (count.size() >= 2) {
+			w.found(true);
+			bool first_time = false;
+			for (int i = 0; i != DAD.size(); i++) {
+				// Loop over vector. If license plate already is in there we dont query
+				if (DAD.get_vector()[i] != ss.str())
+					first_time = true;
+				else
+					first_time = false;
+			}
+			if(first_time) mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
+		}
+		else { w.found(false); };
 	}
 	catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
 	}
-	w.plate = ss.str();
-	return w;
+	w.set_plate(ss.str());
 }
 
 // http://felix.abecassis.me/2011/09/opencv-detect-skew-angle/
@@ -122,7 +129,7 @@ void print_all_the_things(cv::Mat frame) {
 	cv::putText(frame, "Conf:", cv::Point(5, 330), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 }
 
-void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, double fps, tesseract::TessBaseAPI& tess_api) {
+void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, double fps, tesseract::TessBaseAPI& tess_api, detectAndDisplay& DAD) {
 	cv::Mat frame_grey;
 	cv::Mat licenseROI;
 	cv::Mat licenseColor;
@@ -158,10 +165,10 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 			printf("LICENSE PLATES FOUND: : %i\n", license.size());
 			carsROI(license[j]).copyTo(licenseROI);
 			carsColor(license[j]).copyTo(licenseColor);
-			struct word word;
+			word w;
 			// Strinsstream for drawing to screen
 			size_t license_amount;
-			// Create a window and show the image.
+			// Show the image.
 			cv::resizeWindow("License", (licenseColor.cols / 2), (licenseColor.rows / 2));
 			cv::imshow("License", licenseColor);
 			// Draw where the car is in green.
@@ -178,30 +185,33 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 			tess_api.GetUTF8Text();
 			// Check confidence of every word find. If there are two words. Example: "KB 51561" With 85% confidence per word
 			// We send the image over to our SQL server. 
-			word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor);
-			license_amount = word.plate.size();
+			find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, DAD);
 			// Draw amount of licenses found on the left corner
-			cv::putText(frame, std::to_string(license_amount), cv::Point(230, 120), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
+			cv::putText(frame, std::to_string(w.plate_size()), cv::Point(230, 120), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 			// If no word was found we run it through the deskewer
-			if ((!word.query_confirmation)) {
-				// Compute the skew of text. If we don't fix the image tesseract is unable to read the screen. 
+			if ((!w.word_status())) {
+				// Compute the skew of text. Sometimes if this helps tesseract find words.
 				// TODO: Deskew will break text a bit. Test warp affine flags cv::INTER_CUBIC
 				deskew(licenseColor, compute_skew(licenseROI));
 				cv::resizeWindow("Rotated", (licenseColor.cols / 2), (licenseColor.rows / 2));
 				cv::imshow("Rotated", licenseColor);
-				word = find_word_and_confidence(tess_api, frame, carsColor, licenseColor);
-				if ((!word.plate.length()) > 0) {
+				find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, DAD);
+				if ((!w.plate_length()) > 0) {
 					printf("No recognized text!\n");
 					cv::putText(frame, "?", cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
 				}
 				else {
-					printf("Recognized text: %s\n", word.plate);
-					cv::putText(frame, word.plate, cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
+					printf("Recognized text: %s\n", w.get_plate());
+					cv::putText(frame, w.get_plate(), cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
+					// If there is a licenseplate we push_back to a vector
+					DAD.append(w.get_plate());
 				}
 			}
 			else {
-				printf("Recognized text: %s\n", word.plate);
-				cv::putText(frame, word.plate, cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
+				printf("Recognized text: %s\n", w.get_plate());
+				cv::putText(frame, w.get_plate(), cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
+				// If there is a licenseplate we push_back to a vector
+				DAD.append(w.get_plate());
 			}
 			tess_api.Clear();
 		}
@@ -217,6 +227,11 @@ bool vid_exists(const std::string& file) {
 
 std::string full_path(std::string& video) {
 	return std::filesystem::absolute(std::filesystem::path(video));
+}
+
+detectAndDisplay::detectAndDisplay() {
+	// Needs some size at start..
+	plates.push_back("A");
 }
 
 bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api) {
@@ -237,10 +252,12 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 			return false;
 		}
 		bool is_first = true;
+		// Won't be used but can't be asked to do any more work on photos side..
+		detectAndDisplay DAD;
 		while (!image.empty()) {
 			// Only need to process once. Saves processing and frame does not get replaced so it gets filled with drawings
 			if (is_first) {
-				display_screen_find(image, opencv_config, 1, tess_api);
+				display_screen_find(image, opencv_config, 1, tess_api, DAD);
 			}
 			is_first = false;
 			// ESC
@@ -254,12 +271,11 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 			cv::VideoCapture capture;
 			if (!is_camera) {
 				// If vid or protocol
-				if (vid_exists(opencv_config.vid_arg)) {
-				capture.open(full_path(opencv_config.vid_arg), cv::CAP_FFMPEG);
-				}
-				else {
-					capture.open(opencv_config.vid_arg, cv::CAP_FFMPEG);
-				}
+				if (vid_exists(opencv_config.vid_arg))
+					// FFMPEG Is broken av_dict_free() libavutil.so.56 SIGSEGV
+					capture.open(full_path(opencv_config.vid_arg), cv::CAP_GSTREAMER);
+				else
+					capture.open(opencv_config.vid_arg, cv::CAP_GSTREAMER);
 			}
 			if (is_camera)
 				capture.open(opencv_config.camera_arg);
@@ -269,12 +285,13 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 				return false;
 			}
 			// ESC
+			detectAndDisplay DAD;
 			while (cv::waitKey(30) != 27) {
 				double fps = capture.get(cv::CAP_PROP_FPS);
 				cv::Mat frame;
 				capture >> frame;
 				if (frame.empty()) break;
-				display_screen_find(frame, opencv_config, fps, tess_api);
+				display_screen_find(frame, opencv_config, fps, tess_api, DAD);
 			}
 			capture.release();
 		}
@@ -286,3 +303,16 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 	cv::destroyAllWindows();
 	return 0;
 }
+
+void detectAndDisplay::append(const std::string& plate) {
+	plates.push_back(plate);
+}
+
+size_t detectAndDisplay::size() {
+	return plates.size();
+}
+
+std::vector<std::string>& detectAndDisplay::get_vector() {
+	return plates;
+}
+

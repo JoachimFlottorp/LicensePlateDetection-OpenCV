@@ -18,18 +18,5 @@
 #include <string.h>
 #include <utility>
 
-struct opencv_configuration {
-	cv::CascadeClassifier licenseplate_classifier;
-	cv::CascadeClassifier car_classifier;
-	std::string img_arg;
-	std::string vid_arg;
-	std::string car_class_arg = "cars_cv.xml";
-	std::string license_class_arg = "haarcascade_russian_plate_number.xml";
-	int camera_arg;
-};
-
-
-
-
 
 #endif // !MAIN_HPP

@@ -95,7 +95,7 @@ def create_output_dir():
 if __name__ == '__main__':
     try:
         if  sys.argv[1] == "-h":
-            print('\nCommands:\nHelp: -h\Query: -q\nShow Image At End -s\nId: --id\nList ID: --list-id\nQuery Images: --query-images\nExample: retrieve_image.py -q -s --query-images --id 20 --show-images\n')
+            print('\nCommands:\nHelp: -h\Query: -q\nShow Image At End -s\nId: --id\nList ID: --list-id\nQuery Images: --query-images\nExample: retrieve_image.py -q -s --query-images --id 20\n')
             exit(1) 
         elif sys.argv[1] == "-q":
             arg.print_id = False

@@ -10,7 +10,7 @@ void mariasql::mysql_execute_query(MYSQL* conn, std::string sql_query, unsigned 
 	}
 }
 
-bool mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text) {
+void mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text) {
 	printf("\nWriting to SQL.\n");
 	MYSQL* conn;
 	// Create sql connection
@@ -34,9 +34,8 @@ bool mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate,
 		// Make the SQL query
 		mariasql::mysql_execute_query(conn, s.query, s.query_len);
 		mysql_close(conn);
-		return true;
 	}
-	else { fprintf(stderr, "\nError Creating SQL query\n"); mysql_close(conn); return false; };
+	else { fprintf(stderr, "\nError Creating SQL query\n"); mysql_close(conn); };
 }
 
 struct query_s string_format(const cv::Mat& scene, const cv::Mat& car, const cv::Mat& plate, std::string plate_text, MYSQL* conn) {
@@ -86,10 +85,6 @@ struct query_s string_format(const cv::Mat& scene, const cv::Mat& car, const cv:
 		delete[] scene_chunk;
 		delete[] car_chunk;
 		delete[] plate_chunk;
-		delete[] plate_text_char;
-		delete[] plate_char;
-		delete[] car_char;
-		delete[] scene_char;
 	}
 	catch (const std::runtime_error& e) {
 		s.write_confirmation = false;

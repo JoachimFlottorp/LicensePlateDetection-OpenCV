@@ -3,8 +3,6 @@
 
 #include <mysql/mysql.h>
 #include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/dnn.hpp>
 #include <opencv2/imgcodecs.hpp>
 
 #include <stdio.h>
@@ -26,7 +24,7 @@ class mariasql
 public:
 	static void mysql_execute_query(MYSQL* conn, std::string sql_query, unsigned long len);
 
-	static bool WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text);
+	static void WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text);
 };
 
 
