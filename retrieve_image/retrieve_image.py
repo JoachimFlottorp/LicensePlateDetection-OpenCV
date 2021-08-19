@@ -45,25 +45,22 @@ def query_list():
             scene_w = open(scene_dir, "wb")
             scene_w.write(scene)
             scene_w.close()
-            if(show_image_var.get() == 1):
-                with Image.open(scene_dir) as im:
-                    im.show()
 
             car_dir = f"{output_folder}Car ID {id} Plate {plateText}.jpg"
             car_w = open(car_dir, "wb")
             car_w.write(car)
             car_w.close()
-            if(show_image_var.get() == 1):
-                with Image.open(car_dir) as im:
-                    im.show()
 
             plate_dir = f"{output_folder}Plate ID {id} Plate {plateText}.jpg"
             plate_w = open(plate_dir, "wb")
             plate_w.write(plate)
             plate_w.close()
+            
             if(show_image_var.get() == 1):
-                with Image.open(plate_dir) as im:
-                    im.show()
+                with Image.open(scene_dir) as a, Image.open(car_dir) as b, Image.open(plate_dir) as c:
+                    a.show()
+                    b.show()
+                    c.show()
 
     conn.close()
     
