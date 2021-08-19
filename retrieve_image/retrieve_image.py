@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import mariadb
 import sys
 from PIL import Image
@@ -16,7 +17,6 @@ abspath = os.path.abspath(cwd)
 output_folder = "%s/output/" % abspath
 
 def query_list(): 
-    print(f"\n\n{list_id_var.get()}")
     # Connect to our SQL server
     try:
         conn = mariadb.connect(user=str(user_entry.get()), password=str(password_entry.get()), 
@@ -31,7 +31,7 @@ def query_list():
         cur.execute(f"SELECT id, plateText FROM PLATES")
         for id, plateText in cur:
             text1.insert('1.0', f"ID: {id} Plate: {plateText}\n")
-            print(f"ID: {id} Plate: {plateText}")
+            # print(f"ID: {id} Plate: {plateText}")
     
     if(query_image_var.get() == 1):
         cur.execute(f"SELECT * FROM PLATES WHERE id={int(id_entry.get())}")
@@ -69,7 +69,7 @@ def create_output_dir():
     dirs = os.listdir(os.getcwd())
     if "output" not in dirs:
         os.mkdir("output")
-        text1.insert("Made Output Dir")
+        text1.insert('1.0', "Made Output Dir")
         print("Made Output Dir")
     
 def hide_password():
@@ -88,13 +88,13 @@ PROJECT_UI = os.path.join(PROJECT_PATH, "ui.ui")
 frame3 = tk.Frame()
 server_entry = tk.Entry(frame3)
 server_entry.configure(state='normal', validate='focus')
-_text_ = '''localhost'''
+_text_ = '''127.0.0.1'''
 server_entry.delete('0', 'end')
 server_entry.insert('0', _text_)
 server_entry.grid(column='0', row='0')
 server_label = tk.Label(frame3)
 server_label.configure(text='Server Ip:')
-server_label.grid(row='0', sticky='w')
+server_label.grid(row='0', sticky='w', padx=5)
 port_label = tk.Label(frame3)
 port_label.configure(text='Port:')
 port_label.grid(column='0', row='0', sticky='e')
@@ -160,7 +160,7 @@ id_entry.grid(column='1', row='4', sticky='w')
 clear_screen_button = tk.Button(frame3, command=clear_screen)
 clear_screen_button.configure(text='Clear Screen')
 clear_screen_button.grid(column='0', row='4')
-frame3.configure(height='600', width='200')
+frame3.configure(height='600', width='500')
 frame3.grid()
 
 # Main widget

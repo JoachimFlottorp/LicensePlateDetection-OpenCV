@@ -1,4 +1,4 @@
 mariadb
 pillow
 tk
-pygubu
+
