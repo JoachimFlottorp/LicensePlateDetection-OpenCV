@@ -8,7 +8,7 @@ INCLUDES= -I/usr/include/mysql -I/usr/include/mysql/mysql -I/usr/local/include/o
 OBJS= main.o detectAndDisplay.o sql.o word.o query_plates.o
 
 output: $(OBJS)
-	$(CC) $(FLAGS) $(INCLUDES) $(LIBS) $(OBJS) -o ../bin/x64/Debug/opencv_part.out
+	$(CC) $(FLAGS) $(INCLUDES) $(LIBS) $(OBJS) -o bin/opencv_part.out
 
 main.o: main.cpp main.hpp
 	$(CC) $(FLAGS) $(INCLUDES) -c main.cpp
@@ -26,4 +26,4 @@ query_plates.o: query_plates.cpp query_plates.hpp
 	$(CC) $(FLAGS) $(INCLUDES) -c query_plates.cpp
 
 clean:
-	rm *.o ../bin/x64/Debug/opencv_part.out
+	rm *.o bin/opencv_part.out
