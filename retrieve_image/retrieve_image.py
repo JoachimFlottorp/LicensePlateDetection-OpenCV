@@ -55,7 +55,7 @@ def query_list():
             plate_w = open(plate_dir, "wb")
             plate_w.write(plate)
             plate_w.close()
-            
+
             if(show_image_var.get() == 1):
                 with Image.open(scene_dir) as a, Image.open(car_dir) as b, Image.open(plate_dir) as c:
                     a.show()
@@ -80,21 +80,21 @@ def clear_screen():
     text1.delete('1.0', tk.END)
     
 
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-PROJECT_UI = os.path.join(PROJECT_PATH, "ui.ui")
-
 # build ui
 frame3 = tk.Frame()
 root.title("MariaDB Retrieve")
+
 server_entry = tk.Entry(frame3)
 server_entry.configure(state='normal', validate='focus')
 _text_ = DEFAULT.SERVER
 server_entry.delete('0', 'end')
 server_entry.insert('0', _text_)
 server_entry.grid(column='0', row='0')
+
 server_label = tk.Label(frame3)
 server_label.configure(text='Server Ip:')
 server_label.grid(row='0', sticky='w')
+
 port_label = tk.Label(frame3)
 port_label.configure(text='Port:')
 port_label.grid(column='0', row='0', sticky='e')
@@ -104,27 +104,35 @@ _text_ = DEFAULT.PORT
 port_entry.delete('0', 'end')
 port_entry.insert('0', _text_)
 port_entry.grid(column='1', row='0', sticky='w')
+
 text1 = tk.Text(frame3)
 text1.configure(width=50)
 text1.grid(column='0', columnspan='2', row='5', rowspan='1')
+
 query_button = tk.Button(frame3)
 query_button.configure(text='Query', command=query_list)
 query_button.grid(column='0', row='4', sticky='nw')
+
 show_image_label = tk.Label(frame3)
 show_image_label.configure(text='Show Image:')
 show_image_label.grid(column='0', row='1', sticky='w')
+
 query_image_label = tk.Label(frame3)
 query_image_label.configure(text='Query Image:')
 query_image_label.grid(column='0', row='2', sticky='w')
+
 list_id_label = tk.Label(frame3)
 list_id_label.configure(text='List Id:')
 list_id_label.grid(column='0', row='3', sticky='w')
 list_id_check = tk.Checkbutton(frame3, variable=list_id_var, onvalue=1, offvalue=0)
 list_id_check.grid(column='0', padx='75', row='3', sticky='w')
+
 query_image_check = tk.Checkbutton(frame3, variable=query_image_var, onvalue=1, offvalue=0)
 query_image_check.grid(column='0', padx='75', row='2', sticky='w')
+
 show_image_check = tk.Checkbutton(frame3, variable=show_image_var, onvalue=1, offvalue=0)
 show_image_check.grid(column='0', padx='75', row='1', sticky='w')
+
 database_label = tk.Label(frame3)
 database_label.configure(text='Database:')
 database_label.grid(column='0', row='1', sticky='e')
@@ -133,36 +141,45 @@ _text_ = DEFAULT.DATABASE
 database_entry.delete('0', 'end')
 database_entry.insert('0', _text_)
 database_entry.grid(column='1', row='1', sticky='w')
+
 user_label = tk.Label(frame3)
 user_label.configure(text='User:')
 user_label.grid(column='0', row='2', sticky='e')
+
 password_label = tk.Label(frame3)
 password_label.configure(text='Password:')
 password_label.grid(column='0', row='3', sticky='e')
+
 user_entry = tk.Entry(frame3)
 _text_ = DEFAULT.USERNAME
 user_entry.delete('0', 'end')
 user_entry.insert('0', _text_)
 user_entry.grid(column='1', row='2', sticky='w')
+
 password_entry = tk.Entry(frame3)
 password_entry.configure(show='•')
 _text_ = DEFAULT.PASSWORD
 password_entry.delete('0', 'end')
 password_entry.insert('0', _text_)
 password_entry.grid(column='1', row='3', sticky='w')
+
 hide_password_button = tk.Button(frame3)
 eye_ico = 'eye.png'
 eye_ico_for_button = tk.PhotoImage(file=eye_ico)
 hide_password_button.configure(image=eye_ico_for_button, command=hide_password)
 hide_password_button.grid(column='1', row='3', sticky='e', padx=25)
+
 id_label = tk.Label(frame3)
 id_label.configure(text='ID:')
 id_label.grid(column='0', row='4', sticky='e')
+
 id_entry = tk.Entry(frame3)
 id_entry.grid(column='1', row='4', sticky='w')
+
 clear_screen_button = tk.Button(frame3, command=clear_screen)
 clear_screen_button.configure(text='Clear Screen')
 clear_screen_button.grid(column='0', row='4')
+
 frame3.configure(height='600', width='500')
 frame3.grid()
 
