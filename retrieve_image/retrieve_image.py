@@ -24,7 +24,8 @@ def query_list():
         )
     except mariadb.Error as e:
         print(f"Error connecting to MYSQL server with IP: {e}")
-        sys.exit(1)
+        text1.insert('1.0', f"Error connecting to MYSQL server with IP: {e}")
+        return 0
     cur = conn.cursor()
     # Query the server
     if(list_id_var.get() == 1):
