@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <interface version="1.1">
   <object class="tk.Frame" id="frame3">
-    <property name="height">200</property>
-    <property name="width">200</property>
+    <property name="height">800</property>
+    <property name="width">500</property>
     <layout manager="grid">
       <property name="propagate">True</property>
     </layout>
@@ -41,10 +41,10 @@
     </child>
     <child>
       <object class="tk.Entry" id="port_entry">
-        <property name="text" translatable="yes">3306
-</property>
+        <property name="state">normal</property>
+        <property name="text" translatable="yes">3306</property>
         <layout manager="grid">
-          <property name="column">1</property>
+          <property name="column">01</property>
           <property name="propagate">True</property>
           <property name="row">0</property>
           <property name="sticky">w</property>
