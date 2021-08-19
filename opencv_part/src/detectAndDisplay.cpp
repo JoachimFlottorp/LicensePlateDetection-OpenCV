@@ -22,7 +22,7 @@ bool eq(float& a) {
 	return false;
 }
 
-void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor, word& w, detectAndDisplay& DAD) {
+void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, cv::Mat carsColor, cv::Mat licenseColor, word& w, query_plates& QP) {
 	tesseract::ResultIterator* ri = tess_api.GetIterator();
 	tesseract::PageIteratorLevel pi_level = tesseract::RIL_WORD;
 	// Counting with a simple int counter does not work....
@@ -58,11 +58,12 @@ void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, 
 		if (count.size() >= 2) {
 			w.found(true);
 			bool first_time = false;
-			for (int i = 0; i != DAD.size(); i++) {
+			for (int i = 0; i != QP.size(); i++) {
 				// Loop over vector. If license plate already is in there we dont query
-				DAD.get_vector()[i] != ss.str() ? first_time = true : first_time = false;
+				QP.get_vector()[i] != ss.str() ? first_time = true : first_time = false;
 			}
-			if(first_time) mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
+			if(first_time) 
+				mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
 		}
 		else { w.found(false); };
 	}
@@ -126,7 +127,7 @@ void print_all_the_things(cv::Mat frame) {
 	cv::putText(frame, "Conf:", cv::Point(5, 330), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 }
 
-void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, double fps, tesseract::TessBaseAPI& tess_api, detectAndDisplay& DAD) {
+void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, double fps, tesseract::TessBaseAPI& tess_api, query_plates& QP) {
 	cv::Mat frame_grey;
 	cv::Mat licenseROI;
 	cv::Mat licenseColor;
@@ -182,7 +183,7 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 			tess_api.GetUTF8Text();
 			// Check confidence of every word find. If there are two words. Example: "KB 51561" With 85% confidence per word
 			// We send the image over to our SQL server. 
-			find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, DAD);
+			find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, QP);
 			// Draw amount of licenses found on the left corner
 			cv::putText(frame, std::to_string(w.plate_size()), cv::Point(230, 120), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 			// If no word was found we run it through the deskewer
@@ -192,7 +193,7 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 				deskew(licenseColor, compute_skew(licenseROI));
 				cv::resizeWindow("Rotated", (licenseColor.cols / 2), (licenseColor.rows / 2));
 				cv::imshow("Rotated", licenseColor);
-				find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, DAD);
+				find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, QP);
 				if ((!w.plate_length()) > 0) {
 					printf("No recognized text!\n");
 					cv::putText(frame, "?", cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
@@ -201,14 +202,14 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 					printf("Recognized text: %s\n", w.get_plate());
 					cv::putText(frame, w.get_plate(), cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
 					// If there is a licenseplate we push_back to a vector
-					DAD.append(w.get_plate());
+					QP.append(w.get_plate());
 				}
 			}
 			else {
 				printf("Recognized text: %s\n", w.get_plate());
 				cv::putText(frame, w.get_plate(), cv::Point(cars[i].tl()), cv::FONT_HERSHEY_SIMPLEX, 2.0, BRIGHT_GREEN_SCALAR, 3);
 				// If there is a licenseplate we push_back to a vector
-				DAD.append(w.get_plate());
+				QP.append(w.get_plate());
 			}
 			tess_api.Clear();
 		}
@@ -226,11 +227,6 @@ std::string full_path(std::string& video) {
 	return std::filesystem::absolute(std::filesystem::path(video));
 }
 
-detectAndDisplay::detectAndDisplay() {
-	// Needs some size at start..
-	plates.push_back("A");
-}
-
 bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api) {
 	// Load haarcascade
 	if (!opencv_config.licenseplate_classifier.load(opencv_config.license_class_arg)) {
@@ -242,7 +238,7 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 		return false;
 	}
 	// Picture
-	if (is_picture && !is_camera) {
+	if (is_picture) {
 		cv::Mat image = cv::imread(opencv_config.img_arg, cv::IMREAD_COLOR);
 		if (image.empty()) {
 			fprintf(stderr, "There has been an error loading the image!\n");
@@ -250,11 +246,11 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 		}
 		bool is_first = true;
 		// Won't be used but can't be asked to do any more work on photos side..
-		detectAndDisplay DAD;
+		query_plates QP;
 		while (!image.empty()) {
 			// Only need to process once. Saves processing and frame does not get replaced so it gets filled with drawings
 			if (is_first) {
-				display_screen_find(image, opencv_config, 1, tess_api, DAD);
+				display_screen_find(image, opencv_config, 1, tess_api, QP);
 			}
 			is_first = false;
 			// ESC
@@ -282,34 +278,20 @@ bool detectAndDisplay::main_loop(opencv_configuration &opencv_config, const bool
 				return false;
 			}
 			// ESC
-			detectAndDisplay DAD;
-			while (cv::waitKey(30) != 27) {
+			query_plates QP;
+			while (cv::waitKey(1) != 27) {
 				double fps = capture.get(cv::CAP_PROP_FPS);
 				cv::Mat frame;
 				capture >> frame;
 				if (frame.empty()) break;
-				display_screen_find(frame, opencv_config, fps, tess_api, DAD);
+				display_screen_find(frame, opencv_config, fps, tess_api, QP);
 			}
 			capture.release();
 		}
 		catch (const std::exception& e) {
 			std::cout << "\n\n" << e.what() << '\n' << std::endl;
 		}
-		
 	}
 	cv::destroyAllWindows();
 	return 0;
 }
-
-void detectAndDisplay::append(const std::string& plate) {
-	plates.push_back(plate);
-}
-
-size_t detectAndDisplay::size() {
-	return plates.size();
-}
-
-std::vector<std::string>& detectAndDisplay::get_vector() {
-	return plates;
-}
-

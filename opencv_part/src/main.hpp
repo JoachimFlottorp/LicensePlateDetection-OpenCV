@@ -15,8 +15,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <time.h>
-#include <string.h>
+#include <string>
 #include <utility>
+#include <cstring>
 
 
 #endif // !MAIN_HPP

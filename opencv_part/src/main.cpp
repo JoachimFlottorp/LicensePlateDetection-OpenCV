@@ -39,14 +39,12 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 		}
-		else {
-			fprintf(stderr, "\nRun file with two args\nExample: opencv_part.out 1 file.mp4\n");
-		}
+		else return -1;
 	tess_api->End();
 	delete tess_api;
 	}
 	else
-		fprintf(stderr, "\nRun file with two args\nExample: opencv_part.out 1 file.mp4\n");
+		fprintf(stderr, "\nLicense Plate Detection using OpenCV.\nOptions!\nPicture: 0\nVideo: 1\nCamera: 2\nExample: ./opencv_part.out 1 out4K.mp4");
 	printf("\n------------\n| Quitting |\n------------\n");
 	return 0;
 }

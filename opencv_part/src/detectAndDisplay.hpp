@@ -20,6 +20,7 @@
 
 #include "sql.hpp"
 #include "word.hpp"
+#include "query_plates.hpp"
 
 #define DEBUG_PRINT fprintf(stderr, "CHECKPOINT REACHED @  %s:%i\n", __FILE__, __LINE__);
 #define BRIGHT_BLUE_SCALAR cv::Scalar(186, 82, 15)
@@ -38,15 +39,8 @@ struct opencv_configuration {
 
 class detectAndDisplay {
 public:
-	detectAndDisplay();
 
 	static bool main_loop(struct opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api);
-
-	void append(const std::string& plate);
-	size_t size();
-	std::vector<std::string>& get_vector();
-private:
-	std::vector<std::string> plates;
 
 
 };

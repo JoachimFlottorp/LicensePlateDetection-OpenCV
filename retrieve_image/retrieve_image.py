@@ -2,68 +2,48 @@ import mariadb
 import sys
 from PIL import Image
 import os
-from dataclasses import dataclass
+import tkinter as tk
+import tkinter.ttk as ttk
 
-@dataclass
-class arg:
-    show: bool
-    print_id: bool
-    query: bool
-    def get_id() -> str:
-        for idx, arg in enumerate(sys.argv):
-            if arg == "--id":
-                return sys.argv[idx + 1]
-
-    def show_or_not():
-        for idx, arg in enumerate(sys.argv):
-            if arg == "-s":
-                return True
-
-    def list_id():
-        for idx, arg in enumerate(sys.argv):
-            if arg == "--list-id":
-                return True
-
-    def query_images():
-        for idx, arg in enumerate(sys.argv):
-            if arg == "--query-images":
-                return True
-
-# END OF DATACLASS #
+is_hidden = True
+root = tk.Tk()
+list_id_var = tk.IntVar()
+query_image_var = tk.IntVar()
+show_image_var = tk.IntVar()
 
 cwd = os.getcwd()
 abspath = os.path.abspath(cwd)
 output_folder = "%s/output/" % abspath
 
-
-
-
-def query_list(list_id, show_images, id, show): 
+def query_list(): 
+    print(f"\n\n{list_id_var.get()}")
     # Connect to our SQL server
     try:
-        conn = mariadb.connect(user="root", password="root", 
-        host = "192.168.1.39", port=3306, database="license"
+        conn = mariadb.connect(user=str(user_entry.get()), password=str(password_entry.get()), 
+        host = str(server_entry.get()), port= int(port_entry.get()), database=database_entry.get()
         )
     except mariadb.Error as e:
         print(f"Error connecting to MYSQL server with IP: {e}")
         sys.exit(1)
     cur = conn.cursor()
     # Query the server
-    if(list_id): 
+    if(list_id_var.get() == 1):
         cur.execute(f"SELECT id, plateText FROM PLATES")
         for id, plateText in cur:
+            text1.insert('1.0', f"ID: {id} Plate: {plateText}\n")
             print(f"ID: {id} Plate: {plateText}")
-
-    if(show_images):
-        cur.execute(f"SELECT * FROM PLATES WHERE id={id}")
+    
+    if(query_image_var.get() == 1):
+        cur.execute(f"SELECT * FROM PLATES WHERE id={int(id_entry.get())}")
         for id, scene, car, plate, plateText in cur:
+            text1.insert('1.0', f"ID: {id} Plate: {plateText}")
             print(f"ID: {id} Plate: {plateText}")
 
             scene_dir = f"{output_folder}Scene ID {id} Plate {plateText}.jpg"
             scene_w = open(scene_dir, "wb")
             scene_w.write(scene)
             scene_w.close()
-            if(show):
+            if(show_image_var.get() == 1):
                 with Image.open(scene_dir) as im:
                     im.show()
 
@@ -71,7 +51,7 @@ def query_list(list_id, show_images, id, show):
             car_w = open(car_dir, "wb")
             car_w.write(car)
             car_w.close()
-            if(show):
+            if(show_image_var.get() == 1):
                 with Image.open(car_dir) as im:
                     im.show()
 
@@ -79,7 +59,7 @@ def query_list(list_id, show_images, id, show):
             plate_w = open(plate_dir, "wb")
             plate_w.write(plate)
             plate_w.close()
-            if(show):
+            if(show_image_var.get() == 1):
                 with Image.open(plate_dir) as im:
                     im.show()
 
@@ -89,38 +69,104 @@ def create_output_dir():
     dirs = os.listdir(os.getcwd())
     if "output" not in dirs:
         os.mkdir("output")
+        text1.insert("Made Output Dir")
         print("Made Output Dir")
     
+def hide_password():
+    global is_hidden
+    password_entry.configure(show='') if is_hidden else password_entry.configure(show='•')
+    is_hidden = not is_hidden
+
+def clear_screen():
+    text1.delete('1.0', tk.END)
+    
+
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+PROJECT_UI = os.path.join(PROJECT_PATH, "ui.ui")
+
+# build ui
+frame3 = tk.Frame()
+server_entry = tk.Entry(frame3)
+server_entry.configure(state='normal', validate='focus')
+_text_ = '''localhost'''
+server_entry.delete('0', 'end')
+server_entry.insert('0', _text_)
+server_entry.grid(column='0', row='0')
+server_label = tk.Label(frame3)
+server_label.configure(text='Server Ip:')
+server_label.grid(row='0', sticky='w')
+port_label = tk.Label(frame3)
+port_label.configure(text='Port:')
+port_label.grid(column='0', row='0', sticky='e')
+port_entry = tk.Entry(frame3)
+port_entry.configure()
+_text_ = '''3306'''
+port_entry.delete('0', 'end')
+port_entry.insert('0', _text_)
+port_entry.grid(column='1', row='0', sticky='w')
+text1 = tk.Text(frame3)
+text1.configure(width=50)
+text1.grid(column='0', columnspan='2', row='5', rowspan='1')
+query_button = tk.Button(frame3)
+query_button.configure(text='Query', command=query_list)
+query_button.grid(column='0', row='4', sticky='nw')
+show_image_label = tk.Label(frame3)
+show_image_label.configure(text='Show Image:')
+show_image_label.grid(column='0', row='1', sticky='w')
+query_image_label = tk.Label(frame3)
+query_image_label.configure(text='Query Image:')
+query_image_label.grid(column='0', row='2', sticky='w')
+list_id_label = tk.Label(frame3)
+list_id_label.configure(text='List Id:')
+list_id_label.grid(column='0', row='3', sticky='w')
+list_id_check = tk.Checkbutton(frame3, variable=list_id_var, onvalue=1, offvalue=0)
+list_id_check.grid(column='0', padx='75', row='3', sticky='w')
+query_image_check = tk.Checkbutton(frame3, variable=query_image_var, onvalue=1, offvalue=0)
+query_image_check.grid(column='0', padx='75', row='2', sticky='w')
+show_image_check = tk.Checkbutton(frame3, variable=show_image_var, onvalue=1, offvalue=0)
+show_image_check.grid(column='0', padx='75', row='1', sticky='w')
+database_label = tk.Label(frame3)
+database_label.configure(text='Database:')
+database_label.grid(column='0', row='1', sticky='e')
+database_entry = tk.Entry(frame3)
+database_entry.grid(column='1', row='1', sticky='w')
+user_label = tk.Label(frame3)
+user_label.configure(text='User:')
+user_label.grid(column='0', row='2', sticky='e')
+password_label = tk.Label(frame3)
+password_label.configure(text='Password:')
+password_label.grid(column='0', row='3', sticky='e')
+user_entry = tk.Entry(frame3)
+_text_ = '''root'''
+user_entry.delete('0', 'end')
+user_entry.insert('0', _text_)
+user_entry.grid(column='1', row='2', sticky='w')
+password_entry = tk.Entry(frame3)
+password_entry.configure(show='•')
+_text_ = '''root'''
+password_entry.delete('0', 'end')
+password_entry.insert('0', _text_)
+password_entry.grid(column='1', row='3', sticky='w')
+hide_password_button = tk.Button(frame3)
+eye_ico = 'eye.png'
+eye_ico_for_button = tk.PhotoImage(file=eye_ico)
+hide_password_button.configure(image=eye_ico_for_button, command=hide_password)
+hide_password_button.grid(column='1', row='3', sticky='e', padx=25)
+id_label = tk.Label(frame3)
+id_label.configure(text='ID:')
+id_label.grid(column='0', row='4', sticky='e')
+id_entry = tk.Entry(frame3)
+id_entry.grid(column='1', row='4', sticky='w')
+clear_screen_button = tk.Button(frame3, command=clear_screen)
+clear_screen_button.configure(text='Clear Screen')
+clear_screen_button.grid(column='0', row='4')
+frame3.configure(height='600', width='200')
+frame3.grid()
+
+# Main widget
+mainwindow = frame3
+
 
 if __name__ == '__main__':
-    try:
-        if  sys.argv[1] == "-h":
-            print('\nCommands:\nHelp: -h\Query: -q\nShow Image At End -s\nId: --id\nList ID: --list-id\nQuery Images: --query-images\nExample: retrieve_image.py -q -s --query-images --id 20\n')
-            exit(1) 
-        elif sys.argv[1] == "-q":
-            arg.print_id = False
-            arg.show = False
-            if arg.list_id():
-                arg.print_id = True
-            arg.show = arg.show_or_not()
-            # Get id
-            if arg.print_id == True:
-                query_list(True, False, 0, False)
-                exit(1)
-            # Create output dir
-            create_output_dir()
-            # Not allowed to query if you forget an id
-            if arg.get_id() != None:
-                # Make query
-                if arg.query_images() == True:
-                    query_list(False, True, arg.get_id(), arg.show)
-            else:
-                print("Forgot ID '--id'")
-                exit(1)
-            
-            
-        else: 
-            exit(1)
-    except IndexError as error:
-        print(f"IndexError: {error}\nTry '-h'")
-        exit(1)
+    create_output_dir()
+    root.mainloop()
