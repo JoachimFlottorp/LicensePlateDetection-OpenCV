@@ -88,6 +88,7 @@ PROJECT_UI = os.path.join(PROJECT_PATH, "ui.ui")
 
 # build ui
 frame3 = tk.Frame()
+root.title("MariaDB Retrieve")
 server_entry = tk.Entry(frame3)
 server_entry.configure(state='normal', validate='focus')
 _text_ = DEFAULT.SERVER
