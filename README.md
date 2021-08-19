@@ -20,9 +20,3 @@ Libraries used and built self
 
 Yes it's a dumb thing, however i though it up quickly and, i guess it kinda works.
 Python script retrieves the image again.
-
-### wxWidget
-
-Meant to be used with wxWidget applicaton found in 'src'
-Just don't build it and figure it out yourself in some other way!
-
