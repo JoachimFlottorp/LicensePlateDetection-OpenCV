@@ -5,6 +5,7 @@ from PIL import Image
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
+from default_values import *
 
 is_hidden = True
 root = tk.Tk()
@@ -89,7 +90,7 @@ PROJECT_UI = os.path.join(PROJECT_PATH, "ui.ui")
 frame3 = tk.Frame()
 server_entry = tk.Entry(frame3)
 server_entry.configure(state='normal', validate='focus')
-_text_ = '''127.0.0.1'''
+_text_ = DEFAULT.SERVER
 server_entry.delete('0', 'end')
 server_entry.insert('0', _text_)
 server_entry.grid(column='0', row='0')
@@ -101,7 +102,7 @@ port_label.configure(text='Port:')
 port_label.grid(column='0', row='0', sticky='e')
 port_entry = tk.Entry(frame3)
 port_entry.configure()
-_text_ = '''3306'''
+_text_ = DEFAULT.PORT
 port_entry.delete('0', 'end')
 port_entry.insert('0', _text_)
 port_entry.grid(column='1', row='0', sticky='w')
@@ -130,6 +131,9 @@ database_label = tk.Label(frame3)
 database_label.configure(text='Database:')
 database_label.grid(column='0', row='1', sticky='e')
 database_entry = tk.Entry(frame3)
+_text_ = DEFAULT.DATABASE
+database_entry.delete('0', 'end')
+database_entry.insert('0', _text_)
 database_entry.grid(column='1', row='1', sticky='w')
 user_label = tk.Label(frame3)
 user_label.configure(text='User:')
@@ -138,13 +142,13 @@ password_label = tk.Label(frame3)
 password_label.configure(text='Password:')
 password_label.grid(column='0', row='3', sticky='e')
 user_entry = tk.Entry(frame3)
-_text_ = '''root'''
+_text_ = DEFAULT.USERNAME
 user_entry.delete('0', 'end')
 user_entry.insert('0', _text_)
 user_entry.grid(column='1', row='2', sticky='w')
 password_entry = tk.Entry(frame3)
 password_entry.configure(show='•')
-_text_ = '''root'''
+_text_ = DEFAULT.PASSWORD
 password_entry.delete('0', 'end')
 password_entry.insert('0', _text_)
 password_entry.grid(column='1', row='3', sticky='w')
