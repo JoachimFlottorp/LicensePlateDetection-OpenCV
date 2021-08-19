@@ -1,5 +1,5 @@
 # License Plate Detection using OpenCV version 4.5.3
-test
+
 NOTE: This is poorly coded. Im a beginner and should only be used as an example for your own projects.
 There is plenty of work to be done to make it work better, faster whatever.
 
