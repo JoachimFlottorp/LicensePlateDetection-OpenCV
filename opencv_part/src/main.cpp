@@ -8,9 +8,12 @@ int main(int argc, char *argv[]) {
 		// https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method // Sounds the best in my head. TODO: Test this.
 		tess_api->SetPageSegMode(tesseract::PSM_SINGLE_LINE);
 		cv::namedWindow("License", cv::WINDOW_NORMAL);
+		cv::resizeWindow("License", cv::Size(100, 100));
 		cv::namedWindow("Rotated", cv::WINDOW_NORMAL);
+		cv::resizeWindow("Rotated", cv::Size(100, 100));
 		cv::namedWindow("Capture", cv::WINDOW_NORMAL);
 		cv::namedWindow("Car", cv::WINDOW_NORMAL);
+		cv::resizeWindow("Car", cv::Size(100, 100));
 		opencv_configuration cv_config;
 		if (atoi(argv[1]) == 0) {
 			// Use picture if specified

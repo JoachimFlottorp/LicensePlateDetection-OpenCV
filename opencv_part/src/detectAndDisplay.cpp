@@ -154,7 +154,7 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 		cv::rectangle(frame, cv::Point(cars[i].tl()), cv::Point(cars[i].br()), BRIGHT_BLUE_SCALAR, 3);
 		cv::putText(frame, std::to_string(cars_amount), cv::Point(190, 50), cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(255, 0, 255), 3);
 
-		cv::resizeWindow("Car", (carsColor.cols / 2), (carsColor.rows / 2));
+		// cv::resizeWindow("Car", (carsColor.cols / 2), (carsColor.rows / 2));
 		cv::imshow("Car", carsColor);
 
 		opencv_config.licenseplate_classifier.detectMultiScale(carsROI, license, 1.1, 2, 0 | cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30));
@@ -167,7 +167,7 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 			// Strinsstream for drawing to screen
 			size_t license_amount;
 			// Show the image.
-			cv::resizeWindow("License", (licenseColor.cols / 2), (licenseColor.rows / 2));
+			// cv::resizeWindow("License", (licenseColor.cols / 2), (licenseColor.rows / 2));
 			cv::imshow("License", licenseColor);
 			// Draw where the car is in green.
 			cv::rectangle(frame, cv::Point(cars[i].tl()), cv::Point(cars[i].br()), BRIGHT_GREEN_SCALAR, 3);
@@ -191,7 +191,7 @@ void display_screen_find(cv::Mat& frame, opencv_configuration& opencv_config, do
 				// Compute the skew of text. Sometimes if this helps tesseract find words.
 				// TODO: Deskew will break text a bit. Test warp affine flags cv::INTER_CUBIC
 				deskew(licenseColor, compute_skew(licenseROI));
-				cv::resizeWindow("Rotated", (licenseColor.cols / 2), (licenseColor.rows / 2));
+				// cv::resizeWindow("Rotated", (licenseColor.cols / 2), (licenseColor.rows / 2));
 				cv::imshow("Rotated", licenseColor);
 				find_word_and_confidence(tess_api, frame, carsColor, licenseColor, w, QP);
 				if ((!w.plate_length()) > 0) {

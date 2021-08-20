@@ -16,4 +16,3 @@ size_t query_plates::size() {
 std::vector<std::string>& query_plates::get_vector() {
 	return plates;
 }
-
