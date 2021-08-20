@@ -21,16 +21,9 @@ bool word::word_status() {
 }
 
 void word::found(const bool B) {
-	if (B)
-		word_found = true;
-	else
-		word_found = false;
+	B ? word_found = true : word_found = false;
 }
 
 void word::set_plate(std::string s) {
 	plate = s;
-}
-
-void word::not_found() {
-	word_found = false;
 }
