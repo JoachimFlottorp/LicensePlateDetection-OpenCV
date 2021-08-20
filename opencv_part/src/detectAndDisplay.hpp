@@ -40,10 +40,7 @@ struct opencv_configuration {
 
 class detectAndDisplay {
 public:
-
 	static bool main_loop(struct opencv_configuration &opencv_config, const bool is_picture, const bool is_camera, tesseract::TessBaseAPI& tess_api);
-
-
 };
 
 #endif // !DETECTANDDISPLAY_HPP
