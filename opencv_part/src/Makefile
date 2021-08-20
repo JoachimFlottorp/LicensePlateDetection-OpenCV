@@ -1,8 +1,9 @@
 NAME=opencv_part
 
 CC=g++
-FLAGS=-Wall -Wextra -Wunused-value -Wunused-variable -std=c++20 -g2 -gdwarf-2
-LIBS= -L/usr/lib/ -lmariadb -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_videoio -lopencv_objdetect -lopencv_ml -ltesseract -lmariadb
+FLAGS= -Wall -std=c++20 -g2 -gdwarf-2
+# -Wextra -Wunused-value -Wunused-variable 
+LIBS= -L/usr/lib/ -lmariadb -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_videoio -lopencv_objdetect -lopencv_ml -ltesseract -lmariadb -lpthread
 RM =rm -rf
 INCLUDES= -I/usr/include/mysql -I/usr/include/mysql/mysql -I/usr/local/include/opencv4
 OBJS= main.o detectAndDisplay.o sql.o word.o query_plates.o

@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <filesystem>
+#include <thread>
 
 #include "sql.hpp"
 #include "word.hpp"

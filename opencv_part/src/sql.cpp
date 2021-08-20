@@ -10,7 +10,7 @@ void mariasql::mysql_execute_query(MYSQL* conn, std::string sql_query, unsigned 
 	}
 }
 
-void mariasql::WRITE_LICENSE_PLATE(cv::Mat& scene, cv::Mat& car, cv::Mat& plate, std::string plate_text) {
+void mariasql::WRITE_LICENSE_PLATE(cv::Mat scene, cv::Mat car, cv::Mat plate, std::string plate_text) {
 	printf("\nWriting to SQL.\n");
 	MYSQL* conn;
 	// Create sql connection

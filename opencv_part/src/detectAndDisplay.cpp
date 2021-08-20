@@ -62,8 +62,11 @@ void find_word_and_confidence(tesseract::TessBaseAPI& tess_api, cv::Mat& frame, 
 				// Loop over vector. If license plate already is in there we dont query
 				QP.get_vector()[i] != ss.str() ? first_time = true : first_time = false;
 			}
-			if(first_time) 
-				mariasql::WRITE_LICENSE_PLATE(frame, carsColor, licenseColor, ss.str());
+			if(first_time) {
+				// Faster?
+				std::thread sql_thread(mariasql::WRITE_LICENSE_PLATE, frame, carsColor, licenseColor, ss.str());
+				sql_thread.detach();
+			}
 		}
 		else { w.found(false); };
 	}
