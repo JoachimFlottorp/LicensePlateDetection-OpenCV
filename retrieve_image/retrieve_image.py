@@ -89,7 +89,7 @@ server_entry.configure(state='normal', validate='focus')
 _text_ = DEFAULT.SERVER
 server_entry.delete('0', 'end')
 server_entry.insert('0', _text_)
-server_entry.grid(column='0', row='0')
+server_entry.grid(column='0', row='0', padx=65)
 
 server_label = tk.Label(frame3)
 server_label.configure(text='Server Ip:')
@@ -106,7 +106,6 @@ port_entry.insert('0', _text_)
 port_entry.grid(column='1', row='0', sticky='w')
 
 text1 = tk.Text(frame3)
-text1.configure(width=50)
 text1.grid(column='0', columnspan='2', row='5', rowspan='1')
 
 query_button = tk.Button(frame3)
